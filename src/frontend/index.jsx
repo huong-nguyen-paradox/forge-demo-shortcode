@@ -14,7 +14,7 @@ const App = () => {
       .catch((e) => console.log(e.message));
 
     invoke('getEmailMessages', { example: 'my-invoke-variable' })
-      .then(response => {
+      .then(async response => {
         setMessagesData(response); // set the list of messages
 
         // check if messages were returned and if there's at least one message
@@ -24,9 +24,13 @@ const App = () => {
           console.log('Attempting to fetch single message for ID:', firstMessageId);
 
           // use the firstMessageId to call getSingleMessage
-          invoke('getSingleMessage', { messageId: firstMessageId })
-            .then(setSingleMessageData) // set the data for the single message
-            .catch((e) => console.log(e.message));
+          let responseSingleMessage = await invoke('getSingleMessage', { messageId: firstMessageId })
+            // .then(setSingleMessageData) // set the data for the single message
+            // .catch((e) => console.log(e.message));
+          setSingleMessageData(response);
+          
+          let responsePostComment = await invoke('postComment', { comment: `${singleMessageData}` })
+
         } else {
           console.log('No message ID found.')
         }
@@ -44,13 +48,6 @@ const App = () => {
       <Text content='PROFILE' />
       <CodeBlock
         text={JSON.stringify(profileData, null, 2)}
-        language="json"
-        showLineNumbers
-      />
-
-      <Text content='MESSAGES' />
-      <CodeBlock
-        text={JSON.stringify(messagesData, null, 2)}
         language="json"
         showLineNumbers
       />
