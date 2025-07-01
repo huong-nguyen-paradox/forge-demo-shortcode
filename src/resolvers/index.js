@@ -1,5 +1,6 @@
 import Resolver from '@forge/resolver';
-import api from "@forge/api";
+import { api } from "@forge/api";
+import { requestJira } from "@forge/bridge"; 
 
 const resolver = new Resolver();
 
@@ -106,6 +107,35 @@ resolver.define("getSingleMessage", async (req) => {
     return filteredMessage;
 
   }
+
+  resolver.define("postComment", async (req, commentBody) => {
+    console.log("postComment function");
+
+    // TODO: call JIRA API to add comment to the issue
+    let bodyData = `{
+      "body": "${commentBody}",
+      "visibility": {
+        "identifier": "Administrators",
+        "type": "role",
+        "value": "Administrators"
+      }
+    }`;
+
+    // TODO: get this value (hardcoded for now)
+    let issueKey = "CS-2"; // req.issue.id;
+
+    const response = await requestJira(route`/rest/api/2/issue/${issueKey}/comment`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: bodyData,
+      });
+
+    console.log(`Response: ${response.status} ${response.statusText}`);
+    console.log(await response.json());
+  });
 
   // If there's an error, return the error details
   return {
