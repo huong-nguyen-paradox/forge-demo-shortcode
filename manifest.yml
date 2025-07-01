@@ -1,0 +1,66 @@
+modules:
+  jira:issuePanel:
+    - key: gmail-integration-hello-world-issue-panel
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: gmail-integration
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  function:
+    - key: resolver
+      handler: index.handler
+      providers:
+        auth:
+          - google
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs22.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/357d981c-c1fc-48a7-916b-86f82dc66868
+providers:
+  auth:
+    - key: google
+      name: Google
+      scopes:
+        - 'https://www.googleapis.com/auth/userinfo.email'
+      type: oauth2
+      clientId: 289203413048-vkar6t2rdbkqfkpifeul25klek9v0sgf.apps.googleusercontent.com
+      remotes:
+        - google-apis
+      bearerMethod: authorization-header
+      actions:
+        authorization:
+          remote: google-account
+          path: /o/oauth2/v2/auth
+        exchange:
+          remote: google-oauth
+          path: /token
+        revokeToken:
+          remote: google-oauth
+          path: /revoke
+        retrieveProfile:
+          remote: google-apis
+          path: /userinfo/v2/me
+          resolvers:
+            id: id
+            displayName: email
+            avatarUrl: picture
+remotes:
+  - key: google-apis
+    baseUrl: https://www.googleapis.com
+  - key: google-account
+    baseUrl: https://accounts.google.com
+  - key: google-oauth
+    baseUrl: https://oauth2.googleapis.com
+permissions:
+  external:
+    fetch:
+      backend:
+        - 'https://www.googleapis.com'
+        - 'https://oauth2.googleapis.com'
+        - 'https://accounts.google.com'
