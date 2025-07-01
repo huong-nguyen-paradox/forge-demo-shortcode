@@ -28,6 +28,7 @@ providers:
       name: Google
       scopes:
         - 'https://www.googleapis.com/auth/userinfo.email'
+        - 'https://www.googleapis.com/auth/gmail.readonly'
       type: oauth2
       clientId: 289203413048-vkar6t2rdbkqfkpifeul25klek9v0sgf.apps.googleusercontent.com
       remotes:
