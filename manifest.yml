@@ -65,3 +65,6 @@ permissions:
         - 'https://www.googleapis.com'
         - 'https://oauth2.googleapis.com'
         - 'https://accounts.google.com'
+    # TODO add JIRA API scope
+  scopes:
+    - write:jira-work
