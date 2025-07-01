@@ -64,4 +64,56 @@ resolver.define('getEmailMessages', async (req) => {
 
 });
 
+
+resolver.define("getSingleMessage", async (req) => {
+  // Define the required scope for reading Gmail messages
+  const GMAIL_READONLY_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
+
+  // Get the Google API client for the current user, specifying the Gmail scope
+  const google = api.asUser().withProvider('google', 'google-apis', GMAIL_READONLY_SCOPE);
+
+  // Check if credentials exist for the specified scope, if not, request them.
+  // The user will be prompted to grant access to their Gmail data if they haven't already.
+  if (!await google.hasCredentials()) {
+    await google.requestCredentials();
+  }
+
+  // Extract message ID from the request payload ( the client-side will pass the messageId in the payload, e.g., invoke('getSingleMessage', { messageId: '...' }) )
+  const { messageId } = req.payload;
+
+  // Basic validation: ensure messageId is provided
+  if (!messageId) {
+    return {
+      status: 400,
+      statusText: "Bad Request",
+      text: "Message ID is required in the request payload.",
+    };
+  }
+
+  // Construct the API endpoint URL for fetching a single message with full format ( example: /gmail/v1/users/me/messages/YOUR_MESSAGE_ID?format=full )
+  const response = await google.fetch(`/gmail/v1/users/me/messages/${messageId}?format=full`);
+  console.log(`Response from Google fetch for message ID ${messageId}:`, response);
+
+  // If the response is successful, parse and return the message data
+  if (response.ok) {
+    const message = await response.json();
+    console.log(`Message with ID ${messageId} returned:`, message);
+    
+    // extract content from full message
+    const {id, snippet} = message;
+    const filteredMessage = { id, snippet };
+    console.log(`Extract message ID: ${id}, and snippet: ${snippet}`);
+    return filteredMessage;
+
+  }
+
+  // If there's an error, return the error details
+  return {
+    status: response.status,
+    statusText: response.statusText,
+    text: await response.text(),
+  };
+});
+
+
 export const handler = resolver.getDefinitions();
